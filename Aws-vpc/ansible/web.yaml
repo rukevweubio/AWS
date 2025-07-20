@@ -1,0 +1,50 @@
+---
+- name: Install and configure NGINX and CloudWatch Agent
+  hosts: webservers
+  become: true
+
+  tasks:
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Start and enable NGINX
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Install dependencies
+      apt:
+        name: unzip
+        state: present
+
+    - name: Download CloudWatch Agent
+      get_url:
+        url: https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+        dest: /tmp/amazon-cloudwatch-agent.deb
+
+    - name: Install CloudWatch Agent
+      apt:
+        deb: /tmp/amazon-cloudwatch-agent.deb
+
+    - name: Copy CloudWatch config file
+      copy:
+        src: /root/code/AWS/Aws-vpc/amazon-cloudwatch-agent.json
+        dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        mode: '0644'
+
+    - name: Apply CloudWatch agent config
+      command: >
+        /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl
+        -a fetch-config
+        -m ec2
+        -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        -s
+
+    - name: Enable CloudWatch agent on boot
+      systemd:
+        name: amazon-cloudwatch-agent
+        enabled: yes
