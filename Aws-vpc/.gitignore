@@ -1,0 +1,6 @@
+.terra
+.terraform
+.terr*
+*.hcl
+.tfstat*
+.tf*

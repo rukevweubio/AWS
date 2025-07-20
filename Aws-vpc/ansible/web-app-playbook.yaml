@@ -1,0 +1,32 @@
+---
+- name: Setup NGINX web server
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install Python 3 (required for Ansible)
+      apt:
+        name: python3
+        state: present
+
+    - name: Install NGINX
+      apt:
+        name: nginx
+        state: present
+
+    - name: Ensure NGINX service is started and enabled
+      service:
+        name: nginx
+        state: started
+        enabled: true
+
+    - name: Copy index.html to NGINX directory
+      copy:
+        src: /root/code/AWS/Aws-vpc/ansible/index.html
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
