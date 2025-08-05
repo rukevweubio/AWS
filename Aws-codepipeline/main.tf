@@ -1,7 +1,21 @@
-# Create VPC
+terraform {
+  required_version = ">= 1.3.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = var.region
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "5.8.1"
+  version = "4.0.1"
 
   name = "${var.cluster_name}-vpc"
   cidr = "10.0.0.0/16"
@@ -75,28 +89,6 @@ resource "aws_iam_role_policy_attachment" "eks_node_AmazonEKS_CNI_Policy" {
   role       = aws_iam_role.eks_node_role.name
 }
 
-# Allow your IAM user to PassRole
-resource "aws_iam_policy" "allow_passrole" {
-  name        = "AllowPassRoleForEKS"
-  description = "Allow iam:PassRole for EKS cluster role"
-
-  policy = jsonencode({
-    Version = "2012-10-17",
-    Statement = [
-      {
-        Effect = "Allow",
-        Action = "iam:PassRole",
-        Resource = aws_iam_role.eks_cluster_role.arn
-      }
-    ]
-  })
-}
-
-resource "aws_iam_user_policy_attachment" "user_attach_passrole" {
-  user       = "kk_labs_user_557863"
-  policy_arn = aws_iam_policy.allow_passrole.arn
-}
-
 # EKS Cluster
 resource "aws_eks_cluster" "eks" {
   name     = var.cluster_name
@@ -109,7 +101,6 @@ resource "aws_eks_cluster" "eks" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_AmazonEKSClusterPolicy,
     aws_iam_role_policy_attachment.eks_cluster_AmazonEKSServicePolicy,
-    aws_iam_user_policy_attachment.user_attach_passrole
   ]
 }
 
