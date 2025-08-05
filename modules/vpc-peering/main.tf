@@ -20,7 +20,7 @@ data "aws_caller_identity" "peer" {
     provider = aws.provider
    vpc_id = aws_vpc.vpc1.id
    peer_vpc_id = aws_vpc.vpc2.id
-   peer_owner_id = data.aws_caller_identity.peer.account_id
+   peer_owner_id = data.aws_caller_identity.peer
    peer_region = "us-west-2"
    auto_accept   = false
 
